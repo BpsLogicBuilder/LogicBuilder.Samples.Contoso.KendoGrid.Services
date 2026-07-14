@@ -1,20 +1,13 @@
-﻿using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
-using Contoso.BSL.AutoMapperProfiles;
-using Contoso.Contexts;
+﻿using Contoso.Contexts;
 using Contoso.Data.Entities;
 using Contoso.Domain.Entities;
 using Contoso.KendoGrid.Bsl.Controllers;
-using Contoso.Repositories;
-using Contoso.Stores;
 using Kendo.Mvc.Infrastructure;
 using Kendo.Mvc.UI;
 using LogicBuilder.App.KendoGrid.Bsl.Business.Requests;
 using LogicBuilder.App.KendoGrid.Bsl.Utils.Interfaces;
-using LogicBuilder.EntityFrameworkCore.Mapping;
 using LogicBuilder.EntityFrameworkCore.Repositories;
 using LogicBuilder.Expressions.Utils.ExpansionDescriptors;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 
@@ -22,11 +15,6 @@ namespace Contoso.KendoGrid.Bsl.Tests
 {
     public class GridControllerTest : IClassFixture<DatabaseFixture>
     {
-        static GridControllerTest()
-        {
-            InitializeMapperConfiguration();
-        }
-
         public GridControllerTest(DatabaseFixture databaseFixture)
         {
             this.databaseFixture = databaseFixture;
@@ -35,7 +23,6 @@ namespace Contoso.KendoGrid.Bsl.Tests
 
         #region Fields
         private readonly DatabaseFixture databaseFixture;
-        private static MapperConfiguration MapperConfiguration;
         private static IServiceProvider? serviceProvider;
         #endregion Fields
 
@@ -405,41 +392,16 @@ namespace Contoso.KendoGrid.Bsl.Tests
         }
 
         #region Helpers
-        [MemberNotNull(nameof(MapperConfiguration))]
-        private static void InitializeMapperConfiguration()
-        {
-            MapperConfiguration ??= ConfigurationHelper.GetMapperConfiguration(cfg =>
-            {
-                cfg.AddExpressionMapping();
-
-                cfg.AddProfile<ExpressionOperatorsMappingProfile>();
-                cfg.AddProfile<SchoolProfile>();
-                cfg.AddProfile<ExpansionDescriptorToOperatorMappingProfile>();
-            });
-        }
-
         [MemberNotNull(nameof(serviceProvider))]
         private void Initialize()
         {
             serviceProvider ??= new ServiceCollection()
-                .AddDbContext<SchoolContext>
-                (
-                    options => options.UseSqlServer
-                    (
-                        databaseFixture.GetConnectionString(GetType().Name),
-                        options => options.EnableRetryOnFailure()
-                    ),
-                    ServiceLifetime.Transient
-                )
-                .AddAppUtilsMappingOperations()
+                .AddSqlServerDatabaseConfiguration(databaseFixture.GetConnectionString(GetType().Name))
+                .AddLogging()
+                .AddAutoMapperConfiguration()
                 .AddKendoGridBslUtilsServices()
-                .AddTransient<ISchoolStore, SchoolStore>()
-                .AddTransient<IContextRepository, SchoolRepository>()
-                .AddSingleton<AutoMapper.IConfigurationProvider>
-                (
-                    MapperConfiguration
-                )
-                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<AutoMapper.IConfigurationProvider>(), sp.GetService))
+                .AddAppUtilsMappingOperations()
+                .AddGridRequestServices()
                 .BuildServiceProvider();
 
             ReCreateDataBase(serviceProvider.GetRequiredService<SchoolContext>()).GetAwaiter().GetResult();
