@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Contoso.KendoGrid.Bsl.Controllers
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase

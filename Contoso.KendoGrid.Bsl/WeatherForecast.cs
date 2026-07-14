@@ -1,5 +1,6 @@
 namespace Contoso.KendoGrid.Bsl
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public class WeatherForecast
     {
         public DateOnly Date { get; set; }

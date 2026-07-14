@@ -1,23 +1,35 @@
-var builder = WebApplication.CreateBuilder(args);
+namespace Contoso.KendoGrid.Bsl
+{
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    public class Program 
+    {
+        protected Program() {}
 
-// Add services to the container.
+        public async static Task Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+            // Add services to the container.
 
-builder.Services
-    .AddSqlServerDatabaseConfiguration(builder.Configuration.GetConnectionString("DefaultConnection")!)
-    .AddLogging()
-    .AddAutoMapperConfiguration()
-    .AddKendoGridBslUtilsServices()
-    .AddAppUtilsMappingOperations()
-    .AddGridRequestServices();
+            builder.Services.AddControllers();
 
-var app = builder.Build();
+            builder.Services
+                .AddSqlServerDatabaseConfiguration(builder.Configuration.GetConnectionString("DefaultConnection")!)
+                .AddLogging()
+                .AddAutoMapperConfiguration()
+                .AddKendoGridBslUtilsServices()
+                .AddAppUtilsMappingOperations()
+                .AddGridRequestServices();
 
-// Configure the HTTP request pipeline.
+            var app = builder.Build();
 
-app.UseAuthorization();
+            // Configure the HTTP request pipeline.
 
-app.MapControllers();
+            app.UseAuthorization();
 
-await app.RunAsync();
+            app.MapControllers();
+
+            await app.RunAsync();
+        }
+    }
+}

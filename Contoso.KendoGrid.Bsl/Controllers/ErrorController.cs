@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Contoso.KendoGrid.Bsl.Controllers
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [ApiController]
 #pragma warning disable S6931//all routes use full path
     public class ErrorController : ControllerBase
