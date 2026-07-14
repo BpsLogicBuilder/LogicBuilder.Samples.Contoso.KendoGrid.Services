@@ -1,5 +1,10 @@
 # LogicBuilder.Samples.Contoso.KendoGrid.Services
 
+[![CI](https://github.com/BpsLogicBuilder/LogicBuilder.Samples.Contoso.KendoGrid.Services/actions/workflows/ci.yml/badge.svg)](https://github.com/BpsLogicBuilder/LogicBuilder.Samples.Contoso.KendoGrid.Services/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/BpsLogicBuilder/LogicBuilder.Samples.Contoso.KendoGrid.Services/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/BpsLogicBuilder/LogicBuilder.Samples.Contoso.KendoGrid.Services/actions/workflows/github-code-scanning/codeql)
+[![codecov](https://codecov.io/gh/BpsLogicBuilder/LogicBuilder.Samples.Contoso.KendoGrid.Services/graph/badge.svg?token=CMLM2EC80K)](https://codecov.io/gh/BpsLogicBuilder/LogicBuilder.Samples.Contoso.KendoGrid.Services)
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=BpsLogicBuilder_LogicBuilder.Samples.Contoso.KendoGrid.Services&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=BpsLogicBuilder_LogicBuilder.Samples.Contoso.KendoGrid.Services)
+
 A comprehensive .NET sample application demonstrating how to build backend services for Kendo UI Grid components with support for advanced data operations including grouping, filtering, sorting, paging, and aggregation.
 
 ## Overview
