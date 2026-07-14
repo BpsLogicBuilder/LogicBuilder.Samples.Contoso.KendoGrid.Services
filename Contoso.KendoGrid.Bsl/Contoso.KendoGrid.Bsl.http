@@ -1,0 +1,6 @@
+@Contoso.KendoGrid.Bsl_HostAddress = http://localhost:5084
+
+GET {{Contoso.KendoGrid.Bsl_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

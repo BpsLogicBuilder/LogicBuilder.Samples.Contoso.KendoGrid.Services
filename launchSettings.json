@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "contoso.kendogrid.bsl": "StartDebugging",
+        "contoso.kendogrid.api": "StartDebugging"
+      }
+    }
+  }
+}

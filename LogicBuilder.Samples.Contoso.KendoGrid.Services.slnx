@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/API/">
+    <Project Path="Contoso.KendoGrid.Api/Contoso.KendoGrid.Api.csproj" />
+  </Folder>
+  <Folder Name="/BSL/">
+    <Project Path="Contoso.BSL.AutoMapperProfiles/Contoso.BSL.AutoMapperProfiles.csproj" />
+    <Project Path="Contoso.KendoGrid.Bsl/Contoso.KendoGrid.Bsl.csproj" />
+  </Folder>
+  <Folder Name="/Business/">
+    <Project Path="Contoso.Domain/Contoso.Domain.csproj" />
+    <Project Path="Contoso.Repositories/Contoso.Repositories.csproj" />
+  </Folder>
+  <Folder Name="/EF/">
+    <Project Path="Contoso.Contexts/Contoso.Contexts.csproj" />
+    <Project Path="Contoso.Data/Contoso.Data.csproj" />
+    <Project Path="Contoso.Stores/Contoso.Stores.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Contoso.KendoGrid.Api.Tests/Contoso.KendoGrid.Api.Tests.csproj" />
+    <Project Path="Contoso.KendoGrid.Bsl.Tests/Contoso.KendoGrid.Bsl.Tests.csproj" />
+  </Folder>
+  <Folder Name="/_Solution Items/" />
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
+</Solution>

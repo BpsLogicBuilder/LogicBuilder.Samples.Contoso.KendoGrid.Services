@@ -1,0 +1,15 @@
+services:
+  contoso.kendogrid.bsl:
+    image: ${DOCKER_REGISTRY-}contosokendogridbsl
+    build:
+      context: .
+      dockerfile: Contoso.KendoGrid.Bsl/Dockerfile
+
+  contoso.kendogrid.api:
+    image: ${DOCKER_REGISTRY-}contosokendogridapi
+    build:
+      context: .
+      dockerfile: Contoso.KendoGrid.Api/Dockerfile
+    depends_on:
+      - contoso.kendogrid.bsl
+

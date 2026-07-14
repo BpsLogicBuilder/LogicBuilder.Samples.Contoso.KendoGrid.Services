@@ -1,0 +1,6 @@
+@Contoso.KendoGrid.Api_HostAddress = http://localhost:5081
+
+GET {{Contoso.KendoGrid.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
