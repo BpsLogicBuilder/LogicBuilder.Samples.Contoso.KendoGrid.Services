@@ -124,6 +124,66 @@ namespace Contoso.KendoGrid.Bsl.Tests
         }
 
         [Fact]
+        public async Task Get_course_ungrouped_with_aggregates_and_filter()
+        {
+            //arrange
+            KendoGridDataRequest request = new()
+            {
+                Options = new KendoGridDataSourceRequestOptions
+                {
+                    Aggregate = "credits-sum",
+                    Filter = "credits~eq~3",
+                    Group = null,
+                    Page = 1,
+                    Sort = null,
+                    PageSize = 5
+                },
+                ModelType = typeof(CourseModel).AssemblyQualifiedName,
+                DataType = typeof(Course).AssemblyQualifiedName,
+            };
+            IRequestHelper helper = serviceProvider!.GetRequiredService<IRequestHelper>();
+            GridController controller = new(helper);
+
+            //act
+            DataSourceResult result = await controller.GetData(request);
+
+            //assert
+            Assert.Equal(4, result.Total);
+            Assert.Equal(4, ((IEnumerable<CourseModel>)result.Data).Count());
+            Assert.Single(result.AggregateResults);
+        }
+
+        [Fact]
+        public async Task Get_course_ungrouped_with_aggregates_and_filter_with_no_data_returned()
+        {
+            //arrange
+            KendoGridDataRequest request = new()
+            {
+                Options = new KendoGridDataSourceRequestOptions
+                {
+                    Aggregate = "credits-sum",
+                    Filter = "credits~eq~0",
+                    Group = null,
+                    Page = 1,
+                    Sort = null,
+                    PageSize = 5
+                },
+                ModelType = typeof(CourseModel).AssemblyQualifiedName,
+                DataType = typeof(Course).AssemblyQualifiedName,
+            };
+            IRequestHelper helper = serviceProvider!.GetRequiredService<IRequestHelper>();
+            GridController controller = new(helper);
+
+            //act
+            DataSourceResult result = await controller.GetData(request);
+
+            //assert
+            Assert.Equal(0, result.Total);
+            Assert.Empty((IEnumerable<CourseModel>)result.Data);
+            Assert.Null(result.AggregateResults);
+        }
+
+        [Fact]
         public async Task Get_students_ungrouped_with_aggregates()
         {
             //arrange

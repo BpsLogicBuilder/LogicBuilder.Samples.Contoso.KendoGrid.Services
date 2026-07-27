@@ -1,11 +1,26 @@
 using Contoso.KendoGrid.Api;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+const string SecureCorsPolicy = "SecureCorsPolicy";
 
+// Add services to the container.
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(SecureCorsPolicy, policy =>
+    {
+        if (allowedOrigins != null && allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .WithMethods("GET", "POST", "PUT", "DELETE");
+        }
+    });
+});
 builder.Services.AddControllers().AddJsonOptions
 (
     options =>
@@ -23,8 +38,10 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
+app.UseCors(SecureCorsPolicy);
+
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
