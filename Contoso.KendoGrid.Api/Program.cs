@@ -17,7 +17,8 @@ builder.Services.AddCors(options =>
         if (allowedOrigins != null && allowedOrigins.Length > 0)
         {
             policy.WithOrigins(allowedOrigins)
-                  .WithMethods("GET", "POST", "PUT", "DELETE");
+                  .WithMethods("GET", "POST", "PUT", "DELETE")
+                  .WithHeaders("Content-Type", "Authorization");
         }
     });
 });
