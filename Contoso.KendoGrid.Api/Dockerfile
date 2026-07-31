@@ -24,10 +24,7 @@ RUN dotnet publish "./Contoso.KendoGrid.Api.csproj" -c "$BUILD_CONFIGURATION" -o
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
-RUN addgroup -S nonroot \
-    && adduser -S nonroot -G nonroot
 
-USER nonroot
 WORKDIR /app
 WORKDIR /app
 COPY --from=publish /app/publish .
