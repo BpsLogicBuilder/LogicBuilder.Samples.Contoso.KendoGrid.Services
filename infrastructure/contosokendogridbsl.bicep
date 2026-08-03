@@ -79,7 +79,7 @@ resource kendoBslService'Microsoft.App/containerApps@2026-01-01' = {
         external: false
         targetPort: targetPort
         transport: 'auto'
-        clientCertificateMode:'ignore'
+        clientCertificateMode:'require'
       }
       registries: [
         {
