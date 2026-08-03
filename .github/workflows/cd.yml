@@ -98,10 +98,11 @@ jobs:
     - name: Build and Upload Image
       env:
         IMAGE_TAG: "v1.0.${{ github.run_number }}"
+        IMAGE_NAME: "contosokendogridapi"
         ACR_LOGIN_SERVER_NAME: ${{ steps.get_login_server.outputs.login_server }}
       run: |
         echo "ACR LOGIN SERVER NAME ${{ env.ACR_LOGIN_SERVER_NAME }}"
-        az acr build --registry ${{ env.ACR_LOGIN_SERVER_NAME }} --image contosokendogridapi:${{ env.IMAGE_TAG }} --image contosokendogridapi:latest --file ./Contoso.KendoGrid.Api/Dockerfile .
+        az acr build --registry ${{ env.ACR_LOGIN_SERVER_NAME }} --image ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} --image ${{ env.IMAGE_NAME }}:latest --file ./Contoso.KendoGrid.Api/Dockerfile .
 
     - name: Update Contoso.Api Container App image source
       uses: azure/arm-deploy@65ae74fb7aec7c680c88ef456811f353adae4d06
@@ -116,7 +117,7 @@ jobs:
         failOnStdErr: false
 
   deploy-bsl-service:
-    name: Deploy Service
+    name: Deploy BSL Service
     runs-on: ubuntu-latest
     if: github.repository_owner == 'BpsLogicBuilder'
     permissions:
@@ -145,12 +146,13 @@ jobs:
     - name: Build and Upload Contoso.Bsl Image
       env:
         IMAGE_TAG: "v1.0.${{ github.run_number }}"
+        IMAGE_NAME: "contosokendogridbsl"
         ACR_LOGIN_SERVER_NAME: ${{ steps.get_login_server.outputs.login_server }}
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_NUGET_KEY }}
       run: |
         echo "ACR LOGIN SERVER NAME ${{ env.ACR_LOGIN_SERVER_NAME }}"
-        az acr build --registry ${{ env.ACR_LOGIN_SERVER_NAME }} --secret-build-arg TELERIK_USERNAME="${{ env.TELERIK_USERNAME }}" --secret-build-arg TELERIK_PASSWORD="${{ env.TELERIK_PASSWORD }}" --image contosokendogridbsl:${{ env.IMAGE_TAG }} --image contosokendogridbsl:latest --file ./Contoso.KendoGrid.Bsl/Dockerfile .
+        az acr build --registry ${{ env.ACR_LOGIN_SERVER_NAME }} --secret-build-arg TELERIK_USERNAME="${{ env.TELERIK_USERNAME }}" --secret-build-arg TELERIK_PASSWORD="${{ env.TELERIK_PASSWORD }}" --image ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} --image ${{ env.IMAGE_NAME }}:latest --file ./Contoso.KendoGrid.Bsl/Dockerfile .
 
     - name: Update Contoso.Bsl Container App image source
       uses: azure/arm-deploy@65ae74fb7aec7c680c88ef456811f353adae4d06
