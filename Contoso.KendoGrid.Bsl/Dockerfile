@@ -6,12 +6,21 @@ USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 
-
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Contoso.KendoGrid.Bsl/Contoso.KendoGrid.Bsl.csproj", "Contoso.KendoGrid.Bsl/"]
+
+ARG TELERIK_USERNAME
+ARG TELERIK_PASSWORD
+
+RUN dotnet nuget add source "https://nuget.telerik.com/v3/index.json" \
+    -n "Telerik" \
+    -u "$TELERIK_USERNAME" \
+    -p "$TELERIK_PASSWORD" \
+    --store-password-in-clear-text
+
 RUN dotnet restore "./Contoso.KendoGrid.Bsl/Contoso.KendoGrid.Bsl.csproj"
 COPY . .
 WORKDIR "/src/Contoso.KendoGrid.Bsl"
@@ -24,10 +33,7 @@ RUN dotnet publish "./Contoso.KendoGrid.Bsl.csproj" -c "$BUILD_CONFIGURATION" -o
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
-RUN addgroup -S nonroot \
-    && adduser -S nonroot -G nonroot
 
-USER nonroot
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Contoso.KendoGrid.Bsl.dll"]

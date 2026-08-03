@@ -1,0 +1,7 @@
+$rg = "rg-test"
+$acrName="<Get ACR name from the portal>"
+$imageTag="v1.0.0"
+
+az acr build --registry $acrName --image "contosokendogridapi:${imageTag}" --image contosokendogridapi:latest --file ./Contoso.KendoGrid.Api/Dockerfile .
+
+az deployment group create --resource-group $rg --template-file infrastructure/contosokendogridapi.bicep --parameters imageTag="$imageTag"

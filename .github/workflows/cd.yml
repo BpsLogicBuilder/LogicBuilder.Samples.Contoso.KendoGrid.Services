@@ -1,0 +1,166 @@
+name: CD
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  NODE_VERSION: "22.x"
+  PROJECT_NAME: "LogicBuilder.Samples.Contoso.KendoGrid.Services"
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'zulu'
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          source-url: https://nuget.pkg.github.com/bpsLogicBuilder/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add Telerik Nuget source
+        run: dotnet nuget add source https://nuget.telerik.com/v3/index.json -n telerik -u ${{ env.TELERIK_USERNAME }} -p ${{ env.TELERIK_PASSWORD }} --store-password-in-clear-text
+        env:
+          TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+          TELERIK_PASSWORD: ${{ secrets.TELERIK_NUGET_KEY }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+
+      - name: Install SonarQube Cloud scanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Begin SonarQube Cloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: "${{ format('BpsLogicBuilder_{0}', env.PROJECT_NAME) }}"
+          SONAR_ORGANIZATION_KEY: "bpslogicbuilder"
+        run: |
+          dotnet-sonarscanner begin /k:"${{ env.SONAR_PROJECT_KEY }}" /o:"${{ env.SONAR_ORGANIZATION_KEY }}" /d:sonar.qualitygate.wait=true /d:sonar.token="${{ env.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths="**/TestResults/coverage.opencover.xml" /d:sonar.coverage.exclusions="**/Contoso.KendoGrid.Api/**"
+
+      - name: Run unit tests
+        run: dotnet test Contoso.KendoGrid.Bsl.Tests/Contoso.KendoGrid.Bsl.Tests.csproj --verbosity normal --configuration Release /p:CollectCoverage=true /p:Threshold=50 /p:ThresholdType=line /p:ThresholdStat=Average /p:CoverletOutput=./TestResults/ /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:CoverletOutputFormat=opencover /p:Exclude="[Contoso.KendoGrid.Api]*"
+
+      - name: End SonarQube Cloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet-sonarscanner end /d:sonar.token="${{ env.SONAR_TOKEN }}"
+
+  deploy-api-service:
+    name: Deploy API Service
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'BpsLogicBuilder'
+    permissions:
+      id-token: write
+      contents: read
+    needs: test
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    - uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5
+      with:
+        client-id: ${{ secrets.ARM_DEPLOYER_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Get Existing ACR Login Server
+      id: get_login_server
+      env:
+        RESOURCE_GROUP: ${{ secrets.AZURE_RG_CONTOSO }}
+      run: |
+          ACR_SERVER=$(az acr list --resource-group "${{ env.RESOURCE_GROUP }}" --query "[0].loginServer" -o tsv)
+          echo "login_server=$ACR_SERVER" >> $GITHUB_OUTPUT
+
+    - name: Build and Upload Image
+      env:
+        IMAGE_TAG: "v1.0.${{ github.run_number }}"
+        ACR_LOGIN_SERVER_NAME: ${{ steps.get_login_server.outputs.login_server }}
+      run: |
+        echo "ACR LOGIN SERVER NAME ${{ env.ACR_LOGIN_SERVER_NAME }}"
+        az acr build --registry ${{ env.ACR_LOGIN_SERVER_NAME }} --image contosokendogridapi:${{ env.IMAGE_TAG }} --image contosokendogridapi:latest --file ./Contoso.KendoGrid.Api/Dockerfile .
+
+    - name: Update Contoso.Api Container App image source
+      uses: azure/arm-deploy@65ae74fb7aec7c680c88ef456811f353adae4d06
+      env:
+        IMAGE_TAG: "v1.0.${{ github.run_number }}"
+        RESOURCE_GROUP: ${{ secrets.AZURE_RG_CONTOSO }}
+      with:
+        subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+        resourceGroupName: ${{ env.RESOURCE_GROUP}}
+        parameters: imageTag=${{ env.IMAGE_TAG }}
+        template: ./infrastructure/contosokendogridapi.bicep
+        failOnStdErr: false
+
+  deploy-bsl-service:
+    name: Deploy Service
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'BpsLogicBuilder'
+    permissions:
+      id-token: write
+      contents: read
+    needs: test
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    - uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5
+      with:
+        client-id: ${{ secrets.ARM_DEPLOYER_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Get Existing ACR Login Server
+      id: get_login_server
+      env:
+        RESOURCE_GROUP: ${{ secrets.AZURE_RG_CONTOSO }}
+      run: |
+          ACR_SERVER=$(az acr list --resource-group "${{ env.RESOURCE_GROUP }}" --query "[0].loginServer" -o tsv)
+          echo "login_server=$ACR_SERVER" >> $GITHUB_OUTPUT
+
+    - name: Build and Upload Contoso.Bsl Image
+      env:
+        IMAGE_TAG: "v1.0.${{ github.run_number }}"
+        ACR_LOGIN_SERVER_NAME: ${{ steps.get_login_server.outputs.login_server }}
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_NUGET_KEY }}
+      run: |
+        echo "ACR LOGIN SERVER NAME ${{ env.ACR_LOGIN_SERVER_NAME }}"
+        az acr build --registry ${{ env.ACR_LOGIN_SERVER_NAME }} --secret-build-arg TELERIK_USERNAME="${{ env.TELERIK_USERNAME }}" --secret-build-arg TELERIK_PASSWORD="${{ env.TELERIK_PASSWORD }}" --image contosokendogridbsl:${{ env.IMAGE_TAG }} --image contosokendogridbsl:latest --file ./Contoso.KendoGrid.Bsl/Dockerfile .
+
+    - name: Update Contoso.Bsl Container App image source
+      uses: azure/arm-deploy@65ae74fb7aec7c680c88ef456811f353adae4d06
+      env:
+        IMAGE_TAG: "v1.0.${{ github.run_number }}"
+        RESOURCE_GROUP: ${{ secrets.AZURE_RG_CONTOSO }}
+        CONNECTION_STRING: ${{ secrets.CONTOSO_DB_CONNECTION_STRING }}
+      with:
+        subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+        resourceGroupName: ${{ env.RESOURCE_GROUP}}
+        parameters: imageTag=${{ env.IMAGE_TAG }} dbConnectionString="${{ env.CONNECTION_STRING }}"
+        template: ./infrastructure/contosokendogridbsl.bicep
+        failOnStdErr: false

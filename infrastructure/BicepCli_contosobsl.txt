@@ -1,0 +1,7 @@
+$rg = "rg-test"
+$acrName="<Get ACR name from the portal>"
+$imageTag="v1.0.0"
+
+az acr build --registry $acrName --image "contosokendogridbsl:${imageTag}" --image contosokendogridbsl:latest --file ./Contoso.KendoGrid.Bsl/Dockerfile . --secret-build-arg TELERIK_USERNAME="" --secret-build-arg TELERIK_PASSWORD=""
+
+az deployment group create --resource-group $rg --template-file infrastructure/contosokendogridbsl.bicep --parameters imageTag="$imageTag" dbConnectionString=''

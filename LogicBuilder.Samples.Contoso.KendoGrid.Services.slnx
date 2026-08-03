@@ -15,11 +15,18 @@
     <Project Path="Contoso.Data/Contoso.Data.csproj" />
     <Project Path="Contoso.Stores/Contoso.Stores.csproj" />
   </Folder>
+  <Folder Name="/Infra/">
+    <File Path="infrastructure/BicepCli_contosoapi.txt" />
+    <File Path="infrastructure/BicepCli_contosobsl.txt" />
+    <File Path="infrastructure/contosokendogridapi.bicep" />
+    <File Path="infrastructure/contosokendogridbsl.bicep" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="Contoso.KendoGrid.Api.Tests/Contoso.KendoGrid.Api.Tests.csproj" />
     <Project Path="Contoso.KendoGrid.Bsl.Tests/Contoso.KendoGrid.Bsl.Tests.csproj" />
   </Folder>
   <Folder Name="/_Solution Items/">
+    <File Path=".github/workflows/cd.yml" />
     <File Path=".github/workflows/check-for-ab-number.yml" />
     <File Path=".github/workflows/ci.yml" />
     <File Path="CHANGELOG.md" />
