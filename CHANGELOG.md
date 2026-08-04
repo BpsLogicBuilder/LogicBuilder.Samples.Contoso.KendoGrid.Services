@@ -1,3 +1,4 @@
+* 2026-08-03 - AB#206: Add certificate to api-to-bsl request
 * 2026-08-03 - AB#176: Minor readability improvements in CD workflow
 * 2026-08-03 - AB#176: Add YAML for deployment workflow.
 * 2026-08-01 - AB#176: Fix typo in CORS policy Allowed Headers.
