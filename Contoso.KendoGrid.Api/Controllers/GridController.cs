@@ -22,7 +22,8 @@ namespace Contoso.KendoGrid.Api.Controllers
             (
                 $"{urlOptions.BaseBslUrl}api/Grid/GetData",
                 JsonSerializer.Serialize(request),
-                SerializationOptions.Default
+                SerializationOptions.Default,
+                HttpClientOptions.BslClientName
             );
         }
     }

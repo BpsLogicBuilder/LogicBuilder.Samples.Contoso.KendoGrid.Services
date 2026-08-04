@@ -46,6 +46,7 @@ namespace Contoso.KendoGrid.Api.Tests
 
             IServiceCollection services = new ServiceCollection();
             services.AddAppUtilsHttpClientHelper();
+            services.AddHttpClient();
             services.Configure<UrlOptions>(configuration);
             serviceProvider = services.BuildServiceProvider();
         }
