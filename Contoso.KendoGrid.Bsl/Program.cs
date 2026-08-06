@@ -11,7 +11,7 @@ namespace Contoso.KendoGrid.Bsl
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddCertificateAuthorization(builder);
 
             builder.Services
                 .AddSqlServerDatabaseConfiguration(builder.Configuration.GetConnectionString("DefaultConnection")!)
@@ -24,6 +24,8 @@ namespace Contoso.KendoGrid.Bsl
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

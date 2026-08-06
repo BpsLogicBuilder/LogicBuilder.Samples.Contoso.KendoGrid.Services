@@ -165,6 +165,6 @@ jobs:
       with:
         subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
         resourceGroupName: ${{ env.RESOURCE_GROUP}}
-        parameters: imageTag=${{ env.IMAGE_TAG }} dbConnectionString="${{ env.CONNECTION_STRING }}"
+        parameters: imageTag=${{ env.IMAGE_TAG }} dbConnectionString="${{ env.CONNECTION_STRING }}" expectedCerificateThumbprint="${{ vars.CONTOSO_EXPECTED_THUMBPRINT }}"
         template: ./infrastructure/contosokendogridbsl.bicep
         failOnStdErr: false
