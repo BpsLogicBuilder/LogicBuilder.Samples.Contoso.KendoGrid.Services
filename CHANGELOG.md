@@ -1,3 +1,4 @@
+* 2026-08-06 - AB#206: Validate certificate in the BSL.
 * 2026-08-03 - AB#206: Add certificate to api-to-bsl request
 * 2026-08-03 - AB#176: Minor readability improvements in CD workflow
 * 2026-08-03 - AB#176: Add YAML for deployment workflow.
