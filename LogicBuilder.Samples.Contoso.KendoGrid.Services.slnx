@@ -21,11 +21,16 @@
     <File Path="infrastructure/contosokendogridapi.bicep" />
     <File Path="infrastructure/contosokendogridbsl.bicep" />
   </Folder>
+  <Folder Name="/Infra/aks/">
+    <File Path="infrastructure/aks/api-deployment.yaml" />
+    <File Path="infrastructure/aks/bsl-deployment.yaml" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="Contoso.KendoGrid.Api.Tests/Contoso.KendoGrid.Api.Tests.csproj" />
     <Project Path="Contoso.KendoGrid.Bsl.Tests/Contoso.KendoGrid.Bsl.Tests.csproj" />
   </Folder>
   <Folder Name="/_Solution Items/">
+    <File Path=".github/workflows/cd-aks.yml" />
     <File Path=".github/workflows/cd.yml" />
     <File Path=".github/workflows/check-for-ab-number.yml" />
     <File Path=".github/workflows/ci.yml" />
