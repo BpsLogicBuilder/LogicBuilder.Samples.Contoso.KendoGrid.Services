@@ -13,7 +13,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Contoso.KendoGrid.Bsl.Tests
 {
-    public class GridControllerTest : IClassFixture<DatabaseFixture>
+    [Collection("DatabaseCollection")]
+    public class GridControllerTest
     {
         public GridControllerTest(DatabaseFixture databaseFixture)
         {
@@ -23,7 +24,7 @@ namespace Contoso.KendoGrid.Bsl.Tests
 
         #region Fields
         private readonly DatabaseFixture databaseFixture;
-        private static IServiceProvider? serviceProvider;
+        private IServiceProvider? serviceProvider;
         #endregion Fields
 
         [Fact]
@@ -455,8 +456,8 @@ namespace Contoso.KendoGrid.Bsl.Tests
         [MemberNotNull(nameof(serviceProvider))]
         private void Initialize()
         {
-            serviceProvider ??= new ServiceCollection()
-                .AddSqlServerDatabaseConfiguration(databaseFixture.GetConnectionString(GetType().Name))
+            serviceProvider = new ServiceCollection()
+                .AddSqlServerDatabaseConfiguration(databaseFixture.GetConnectionString($"{GetType().Name}_{Guid.NewGuid():N}"))
                 .AddLogging()
                 .AddAutoMapperConfiguration()
                 .AddKendoGridBslUtilsServices()
