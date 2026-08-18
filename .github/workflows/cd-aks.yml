@@ -85,12 +85,15 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: Get Deployment Outputs
-      id: get_deployment_outpots
+      id: get_deployment_outputs
       env:
         RESOURCE_GROUP: ${{ secrets.AZURE_RG_CONTOSO_AKS }}
       run: |
           ACR_NAME=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.acrName.value -o tsv)
           echo "::add-mask::$ACR_NAME"
+
+          APP_CONFIG_ENDPOINT=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.appConfigurationEndPoint.value -o tsv)
+          echo "::add-mask::$APP_CONFIG_ENDPOINT"
 
           AKS_CLUSTER_NAME=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.aksClusterName.value -o tsv)
           echo "::add-mask::$AKS_CLUSTER_NAME"
@@ -98,19 +101,20 @@ jobs:
           CONTOSO_APP_NAMESPACE=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.kubernetesNamespace.value -o tsv)
           echo "::add-mask::$CONTOSO_APP_NAMESPACE"
 
-          CONTOSO_API_SERVICEACCOUNT_NAME=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.contosoApiServiceAccountName.value -o tsv)
-          echo "::add-mask::$CONTOSO_API_SERVICEACCOUNT_NAME"
+          CONTOSO_KENDO_GRID_API_SERVICEACCOUNT_NAME=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.contosoKendoGridApiServiceAccountName.value -o tsv)
+          echo "::add-mask::$CONTOSO_KENDO_GRID_API_SERVICEACCOUNT_NAME"
 
           echo "acr_name=$ACR_NAME" >> $GITHUB_OUTPUT
+          echo "app_config_endpoint=$APP_CONFIG_ENDPOINT" >> $GITHUB_OUTPUT
           echo "aks_cluster_name=$AKS_CLUSTER_NAME" >> $GITHUB_OUTPUT
           echo "contoso_app_namespace=$CONTOSO_APP_NAMESPACE" >> $GITHUB_OUTPUT
-          echo "contoso_api_serviceaccount_name=$CONTOSO_API_SERVICEACCOUNT_NAME" >> $GITHUB_OUTPUT
+          echo "contoso_kendo_grid_api_serviceaccount_name=$CONTOSO_KENDO_GRID_API_SERVICEACCOUNT_NAME" >> $GITHUB_OUTPUT
 
     - name: Build and Upload Image
       env:
         IMAGE_TAG: "v1.0.${{ github.run_number }}"
         IMAGE_NAME: "contosokendogridapi"
-        ACR_NAME: ${{ steps.get_deployment_outpots.outputs.acr_name }}
+        ACR_NAME: ${{ steps.get_deployment_outputs.outputs.acr_name }}
       run: |
         echo "ACR NAME ${{ env.ACR_NAME }}"
         az acr build --registry ${{ env.ACR_NAME }} --image ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} --image ${{ env.IMAGE_NAME }}:latest --file ./Contoso.KendoGrid.Api/Dockerfile .
@@ -118,20 +122,23 @@ jobs:
     - name: Get AKS Credentials
       env:
         RESOURCE_GROUP: ${{ secrets.AZURE_RG_CONTOSO_AKS }}
-        AKS_CLUSTER_NAME: ${{ steps.get_deployment_outpots.outputs.aks_cluster_name }}
+        AKS_CLUSTER_NAME: ${{ steps.get_deployment_outputs.outputs.aks_cluster_name }}
       run: |
         az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.AKS_CLUSTER_NAME }}
 
     - name: Deploy Manifext
       env:
-        ACR_NAME: ${{ steps.get_deployment_outpots.outputs.acr_name }}
+        ACR_NAME: ${{ steps.get_deployment_outputs.outputs.acr_name }}
+        APP_CONFIG_ENDPOINT: ${{ steps.get_deployment_outputs.outputs.app_config_endpoint }}
         IMAGE_TAG: "v1.0.${{ github.run_number }}"
-        CONTOSO_APP_NAMESPACE: ${{ steps.get_deployment_outpots.outputs.contoso_app_namespace }}
-        CONTOSO_API_SERVICEACCOUNT_NAME: ${{ steps.get_deployment_outpots.outputs.contoso_api_serviceaccount_name }}
+        CONTOSO_APP_NAMESPACE: ${{ steps.get_deployment_outputs.outputs.contoso_app_namespace }}
+        CONTOSO_KENDO_GRID_API_SERVICEACCOUNT_NAME: ${{ steps.get_deployment_outputs.contoso_kendo_grid_api_serviceaccount_name }}
       run: |
         sed -e "s|ACR_NAME|${{ env.ACR_NAME }}|g" \
+        -e "s|APP_CONFIG_ENDPOINT|${{ env.APP_CONFIG_ENDPOINT }}|g" \
         -e "s|IMAGE_TAG|${{ env.IMAGE_TAG }}|g" \
-        -e "s|CONTOSO_API_SERVICEACCOUNT_NAME|${{ env.CONTOSO_API_SERVICEACCOUNT_NAME }}|g" \
+        -e "s|CONTOSO_KENDO_GRID_API_SERVICEACCOUNT_NAME|${{ env.CONTOSO_KENDO_GRID_API_SERVICEACCOUNT_NAME }}|g" \
+        -e "s|CONTOSO_APP_NAMESPACE|${{ env.CONTOSO_APP_NAMESPACE }}|g" \
         infrastructure/aks/api-deployment.yaml | kubectl apply -f - -n ${{ env.CONTOSO_APP_NAMESPACE }}
 
   deploy-bsl-service:
@@ -154,12 +161,15 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: Get Deployment Outputs
-      id: get_deployment_outpots
+      id: get_deployment_outputs
       env:
         RESOURCE_GROUP: ${{ secrets.AZURE_RG_CONTOSO_AKS }}
       run: |
           ACR_NAME=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.acrName.value -o tsv)
           echo "::add-mask::$ACR_NAME"
+
+          APP_CONFIG_ENDPOINT=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.appConfigurationEndPoint.value -o tsv)
+          echo "::add-mask::$APP_CONFIG_ENDPOINT"
 
           AKS_CLUSTER_NAME=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.aksClusterName.value -o tsv)
           echo "::add-mask::$AKS_CLUSTER_NAME"
@@ -167,10 +177,14 @@ jobs:
           CONTOSO_APP_NAMESPACE=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.kubernetesNamespace.value -o tsv)
           echo "::add-mask::$CONTOSO_APP_NAMESPACE"
 
+          CONTOSO_KENDO_GRID_BSL_SERVICEACCOUNT_NAME=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.contosoKendoGridBslServiceAccountName.value -o tsv)
+          echo "contoso_kendo_grid_bsl_serviceaccount_name=$CONTOSO_KENDO_GRID_BSL_SERVICEACCOUNT_NAME" >> $GITHUB_OUTPUT
+
           EXPECTED_CERTIFICATE_THUMBPRINT=$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} --name main --query properties.outputs.contosoBslCertificateThumbprint.value -o tsv)
           echo "::add-mask::$EXPECTED_CERTIFICATE_THUMBPRINT"
 
           echo "acr_name=$ACR_NAME" >> $GITHUB_OUTPUT
+          echo "app_config_endpoint=$APP_CONFIG_ENDPOINT" >> $GITHUB_OUTPUT
           echo "aks_cluster_name=$AKS_CLUSTER_NAME" >> $GITHUB_OUTPUT
           echo "contoso_app_namespace=$CONTOSO_APP_NAMESPACE" >> $GITHUB_OUTPUT
           echo "expected_certificate_thumbprint=$EXPECTED_CERTIFICATE_THUMBPRINT" >> $GITHUB_OUTPUT
@@ -179,7 +193,7 @@ jobs:
       env:
         IMAGE_TAG: "v1.0.${{ github.run_number }}"
         IMAGE_NAME: "contosokendogridbsl"
-        ACR_NAME: ${{ steps.get_deployment_outpots.outputs.acr_name }}
+        ACR_NAME: ${{ steps.get_deployment_outputs.outputs.acr_name }}
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_NUGET_KEY }}
       run: |
@@ -189,18 +203,23 @@ jobs:
     - name: Get AKS Credentials
       env:
         RESOURCE_GROUP: ${{ secrets.AZURE_RG_CONTOSO_AKS }}
-        AKS_CLUSTER_NAME: ${{ steps.get_deployment_outpots.outputs.aks_cluster_name }}
+        AKS_CLUSTER_NAME: ${{ steps.get_deployment_outputs.outputs.aks_cluster_name }}
       run: |
         az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.AKS_CLUSTER_NAME }}
 
     - name: Deploy Manifext
       env:
-        ACR_NAME: ${{ steps.get_deployment_outpots.outputs.acr_name }}
+        ACR_NAME: ${{ steps.get_deployment_outputs.outputs.acr_name }}
+        APP_CONFIG_ENDPOINT: ${{ steps.get_deployment_outputs.outputs.app_config_endpoint }}
         IMAGE_TAG: "v1.0.${{ github.run_number }}"
-        CONTOSO_APP_NAMESPACE: ${{ steps.get_deployment_outpots.outputs.contoso_app_namespace }}
-        EXPECTED_CERTIFICATE_THUMBPRINT: ${{ steps.get_deployment_outpots.outputs.expected_certificate_thumbprint }}
+        CONTOSO_KENDO_GRID_BSL_SERVICEACCOUNT_NAME: ${{ steps.get_deployment_outputs.outputs.contoso_kendo_grid_bsl_serviceaccount_name }}
+        CONTOSO_APP_NAMESPACE: ${{ steps.get_deployment_outputs.outputs.contoso_app_namespace }}
+        EXPECTED_CERTIFICATE_THUMBPRINT: ${{ steps.get_deployment_outputs.outputs.expected_certificate_thumbprint }}
       run: |
         sed -e "s|ACR_NAME|${{ env.ACR_NAME }}|g" \
+        -e "s|APP_CONFIG_ENDPOINT|${{ env.APP_CONFIG_ENDPOINT }}|g" \
         -e "s|IMAGE_TAG|${{ env.IMAGE_TAG }}|g" \
         -e "s|EXPECTED_CERTIFICATE_THUMBPRINT|${{ env.EXPECTED_CERTIFICATE_THUMBPRINT }}|g" \
+        -e "s|CONTOSO_KENDO_GRID_BSL_SERVICEACCOUNT_NAME|${{ env.CONTOSO_KENDO_GRID_BSL_SERVICEACCOUNT_NAME }}|g" \
+        -e "s|CONTOSO_APP_NAMESPACE|${{ env.CONTOSO_APP_NAMESPACE }}|g" \
         infrastructure/aks/bsl-deployment.yaml | kubectl apply -f - -n ${{ env.CONTOSO_APP_NAMESPACE }}
