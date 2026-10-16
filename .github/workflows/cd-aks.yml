@@ -55,10 +55,18 @@ jobs:
           SONAR_PROJECT_KEY: "${{ format('BpsLogicBuilder_{0}', env.PROJECT_NAME) }}"
           SONAR_ORGANIZATION_KEY: "bpslogicbuilder"
         run: |
-          dotnet-sonarscanner begin /k:"${{ env.SONAR_PROJECT_KEY }}" /o:"${{ env.SONAR_ORGANIZATION_KEY }}" /d:sonar.qualitygate.wait=true /d:sonar.token="${{ env.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths="**/TestResults/coverage.opencover.xml" /d:sonar.coverage.exclusions="**/Contoso.KendoGrid.Api/**"
+          dotnet-sonarscanner begin /k:"${{ env.SONAR_PROJECT_KEY }}" /o:"${{ env.SONAR_ORGANIZATION_KEY }}" /d:sonar.qualitygate.wait=true /d:sonar.token="${{ env.SONAR_TOKEN }}" /d:sonar.cs.vscoveragexml.reportsPaths="**/TestResults/coverage.xml" /d:sonar.coverage.exclusions="**/Contoso.KendoGrid.Api/**"
 
       - name: Run unit tests
-        run: dotnet test Contoso.KendoGrid.Bsl.Tests/Contoso.KendoGrid.Bsl.Tests.csproj --verbosity normal --configuration Release /p:CollectCoverage=true /p:Threshold=50 /p:ThresholdType=line /p:ThresholdStat=Average /p:CoverletOutput=./TestResults/ /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:CoverletOutputFormat=opencover /p:Exclude="[Contoso.KendoGrid.Api]*"
+        run: |
+          dotnet test Contoso.KendoGrid.Bsl.Tests/Contoso.KendoGrid.Bsl.Tests.csproj \
+          --verbosity normal --configuration Release \
+          --results-directory ./TestResults/ \
+          -- \
+          --coverage \
+          --coverage-settings CodeCoverage.runsettings \
+          --coverage-output-format xml \
+          --coverage-output coverage.xml
 
       - name: End SonarQube Cloud analysis
         env:
@@ -132,7 +140,7 @@ jobs:
         APP_CONFIG_ENDPOINT: ${{ steps.get_deployment_outputs.outputs.app_config_endpoint }}
         IMAGE_TAG: "v1.0.${{ github.run_number }}"
         CONTOSO_APP_NAMESPACE: ${{ steps.get_deployment_outputs.outputs.contoso_app_namespace }}
-        CONTOSO_KENDO_GRID_API_SERVICEACCOUNT_NAME: ${{ steps.get_deployment_outputs.contoso_kendo_grid_api_serviceaccount_name }}
+        CONTOSO_KENDO_GRID_API_SERVICEACCOUNT_NAME: ${{ steps.get_deployment_outputs.outputs.contoso_kendo_grid_api_serviceaccount_name }}
       run: |
         sed -e "s|ACR_NAME|${{ env.ACR_NAME }}|g" \
         -e "s|APP_CONFIG_ENDPOINT|${{ env.APP_CONFIG_ENDPOINT }}|g" \
