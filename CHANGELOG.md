@@ -1,3 +1,4 @@
+* 2026-11-16 - AB#269: Turn on Application Insights.
 * 2026-10-16 - AB#246: Fix service account name error.
 * 2026-08-18 - AB#208: Add App Configuration to AKS deployment.
 * 2026-08-16 - AB#208: Add App Configuration to ACA deployment.

@@ -1,3 +1,5 @@
+using Azure.Monitor.OpenTelemetry.AspNetCore;
+
 namespace Contoso.KendoGrid.Bsl
 {
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -12,6 +14,7 @@ namespace Contoso.KendoGrid.Bsl
             // Add services to the container.
 
             builder.Services.AddCertificateAuthorization(builder);
+            builder.Services.AddOpenTelemetry().UseAzureMonitor();
 
             builder.Services
                 .AddSqlServerDatabaseConfiguration(builder.Configuration.GetConnectionString("DefaultConnection")!)
